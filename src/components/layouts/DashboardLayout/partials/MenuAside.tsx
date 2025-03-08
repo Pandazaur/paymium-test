@@ -1,11 +1,24 @@
 import { NavLink } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
+import { queries } from '../../../../libs/queries/factories'
+import { toMilliseconds } from '../../../../utils/time.ts'
 
 export default function MenuAside() {
+	const { data: transactionListResult } = useQuery({
+		...queries.transactions.transactionList(),
+		staleTime: toMilliseconds({ minutes: 20 }),
+	})
+
+	const transactionCount = transactionListResult?.[0].transactions.length
+
 	const LINKS = [
 		[
 			{ label: 'Overview', to: '/' },
 			// @TODO Changer le compte dynamiquement
-			{ label: 'Transactions (3)', to: '/transactions' },
+			{
+				label: `Transactions ${transactionCount ? `(${transactionCount})` : ''}`,
+				to: '/transactions',
+			},
 		],
 		[{ label: 'Transfers (2)' }, { label: 'Invoices (1)' }],
 		[{ label: 'Manage cards' }, { label: 'Manage accounts' }],
