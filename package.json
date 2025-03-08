@@ -4,11 +4,11 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"postinstall": "cp ./scripts/pre-commit ./.git/hooks",
 		"dev": "vite",
 		"build": "tsc -b && vite build",
 		"lint": "eslint .",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"postinstall": "cp ./scripts/pre-commit ./.git/hooks"
 	},
 	"dependencies": {
 		"@fontsource-variable/rubik": "^5.2.5",
