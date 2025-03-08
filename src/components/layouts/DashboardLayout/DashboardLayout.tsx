@@ -7,7 +7,7 @@ export default function DashboardLayout() {
 			<MenuAside />
 			<div className="flex-1 flex flex-col">
 				<div className="header__cell bg-yellow-500" />
-				<div className={'bg-gray-100 flex-1'}>
+				<div className={'bg-gray-100 flex-1 overflow-y-auto'}>
 					<Outlet />
 				</div>
 			</div>
