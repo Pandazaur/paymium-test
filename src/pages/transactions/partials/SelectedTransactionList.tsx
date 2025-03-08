@@ -18,26 +18,29 @@ export default function SelectedTransactionList(props: Props) {
 
 			return (
 				<div className={'p-6'}>
-					<div className={'text-xs text-gray-500 mb-2'}>Transaction n°{transaction.id}</div>
-					<h1 className={'font-medium text-2xl flex items-center gap-4 mb-2'}>
+					<div className={'text-gray-500 text-xs mb-2'}>
+						{DateTime.fromISO(transaction.created_at).toLocaleString(DateTime.DATETIME_FULL)}
+					</div>
+					<h1 className={'font-medium text-2xl flex items-center gap-4 mb-0'}>
 						{transaction.counterparty_name}
 						<Badge type={transaction.credit ? 'error' : 'success'} className={'capitalize'}>
 							{transaction.operation_type}
 						</Badge>
 					</h1>
-					<div className={'text-4xl mb-2'}>
+					<div className={'text-xs text-gray-500 mb-2'}>Transaction n°{transaction.id}</div>
+					<div className={'text-4xl mb-10'}>
 						{transaction.amount.toLocaleString('fr', { style: 'currency', currency: transaction.currency })}
 					</div>
-					<div className={'text-gray-500 text-xs mb-10'}>
-						Date: {DateTime.fromISO(transaction.created_at).toLocaleString(DateTime.DATETIME_FULL)}
+					<div>
+						Attachments:
+						<ul className={'flex flex-col gap-2 mt-2'}>
+							{transaction.attachements.map((attachment) => (
+								<li key={attachment.url}>
+									<img src={attachment.url} loading={'lazy'} alt={`Attachment : ${attachment.url}`} />
+								</li>
+							))}
+						</ul>
 					</div>
-					<ul className={'flex flex-col gap-2'}>
-						{transaction.attachements.map((attachment) => (
-							<li key={attachment.url}>
-								<img src={attachment.url} loading={'lazy'} alt={`Attachment : ${attachment.url}`} />
-							</li>
-						))}
-					</ul>
 				</div>
 			)
 		}
