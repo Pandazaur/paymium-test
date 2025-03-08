@@ -1,24 +1,23 @@
+// biome-ignore lint/style/useImportType: <explanation>
 import {
-	ColumnDef,
 	createColumnHelper,
+	flexRender,
 	getCoreRowModel,
+	getSortedRowModel,
+	SortingState,
 	useReactTable,
 } from '@tanstack/react-table'
 import { DateTime } from 'luxon'
-import { ReactNode, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { queries } from '../../libs/queries/factories'
 import { toMilliseconds } from '../../utils/time.ts'
 import { retypeTransaction } from '../../utils/transactions.ts'
 import type { Transaction } from '../../types/response/transaction-api/TransactionList.type.ts'
 
-type Column = {
-	label: string
-	key: keyof Transaction
-	formater?: (transaction: Transaction) => ReactNode | string
-}
-
 export default function TransactionPage() {
+	const [sorting, setSorting] = useState<SortingState>([])
+
 	const {
 		data: transactions,
 		isLoading,
@@ -32,111 +31,94 @@ export default function TransactionPage() {
 		},
 	})
 
-	const columns = useMemo<Column[]>(() => {
+	const columns = useMemo(() => {
+		const columnsHelper = createColumnHelper<Transaction>()
+
 		return [
-			{
-				label: 'DD-MM-YYYY',
-				key: 'created_at',
-				formater: (transaction) =>
-					DateTime.fromISO(transaction.created_at).toFormat(
-						'dd-MM-yyyy',
-					),
-			},
-			{
-				label: 'Counterparty Name',
-				key: 'counterparty_name',
-			},
-			{
-				label: 'Payment type',
-				key: 'operation_type',
-				formater: (transaction) =>
-					getOperationLabel(transaction.operation_type),
-			},
-			{
-				label: 'Amount',
-				key: 'amount',
-				formater: (transaction) => {
-					const indicator = transaction.amount > 0 ? '▲' : '▼'
+			columnsHelper.accessor('created_at', {
+				cell: (info) => DateTime.fromISO(info.getValue()).toFormat('dd-MM-yyyy'),
+				header: 'DD-MM-YYYY',
+			}),
+			columnsHelper.accessor('counterparty_name', { header: 'Counterparty Name' }),
+			columnsHelper.accessor('operation_type', {
+				header: 'Payment type',
+				cell: (info) => <span className={'capitalize'}>{info.getValue()}</span>,
+			}),
+			columnsHelper.accessor('amount', {
+				header: 'Amount',
+				meta: {
+					columnClasses: 'text-right',
+				},
+				cell: (info) => {
+					const indicator = info.getValue() > 0 ? '▲' : '▼'
+					let amountText = `${info.getValue()} ${info.cell.row.original.currency}`
 
-					let amount = `${transaction.amount} ${transaction.currency}`
-
-					if (transaction.amount > 0) {
-						amount = `+${amount}`
+					if (info.getValue() > 0) {
+						amountText = `+${amountText}`
 					}
 
 					return (
 						<span className={'inline-flex items-center gap-1'}>
-							{amount}{' '}
-							<span
-								className={`text-xs ${transaction.amount > 0 ? 'text-green-300' : 'text-red-300'}`}
-							>
+							{amountText}{' '}
+							<span className={`text-xs ${info.getValue() > 0 ? 'text-green-300' : 'text-red-300'}`}>
 								{indicator}
 							</span>
 						</span>
 					)
 				},
-			},
-			{
-				label: '📎',
-				key: 'attachements',
-				formater: (transaction) =>
-					`📎 ${transaction.attachements.length}`,
-			},
+			}),
+			columnsHelper.accessor('attachements', {
+				header: '📎',
+				cell: (info) => `📎 ${info.getValue().length}`,
+			}),
 		]
 	}, [])
 
-	const getOperationLabel = (
-		operationType: Transaction['operation_type'],
-	) => {
-		switch (operationType) {
-			case 'cashback':
-				return 'Cashback'
-			case 'refund':
-				return 'Refund'
-			case 'purchase':
-				return 'Purchase'
-			case 'transfer':
-				return 'Transfer'
-			default:
-				return operationType
-		}
+	const transactionTable = useReactTable({
+		data: transactions || [],
+		columns,
+		debugTable: import.meta.env.DEV,
+		getCoreRowModel: getCoreRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		onSortingChange: setSorting,
+		state: {
+			sorting,
+		},
+	})
+
+	const renderTableHeader = () => {
+		return (
+			<thead className={'border-b border-gray-500'}>
+				{transactionTable.getHeaderGroups().map((headerGroup) => (
+					<tr key={headerGroup.id}>
+						{headerGroup.headers.map((header) => {
+							return (
+								<th
+									className={`text-sm pb-6 pr-6 ${header.column.getIsSorted() ? 'font-medium' : 'font-normal'}`}
+									key={header.id}
+									colSpan={header.colSpan}
+								>
+									{header.isPlaceholder ? null : (
+										// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+										<div
+											className={header.column.getCanSort() ? 'cursor-pointer select-none' : ''}
+											onClick={header.column.getToggleSortingHandler()}
+										>
+											{flexRender(header.column.columnDef.header, header.getContext())}
+											<span className={'text-xs text-yellow-500'}>
+												{{ asc: ' ▲ ', desc: ' ▼ ' }[header.column.getIsSorted() as string] ??
+													null}
+											</span>
+										</div>
+									)}
+								</th>
+							)
+						})}
+					</tr>
+				))}
+			</thead>
+		)
 	}
-
-	// const columns = useMemo(() => {
-	// 	const columnHelper = createColumnHelper<Transaction>()
-	//
-	// 	return [
-	// 		columnHelper.accessor('created_at', {
-	// 			header: 'DD-MM-YYYY',
-	// 			cell: (info) => {
-	// 				console.log(info)
-	// 				info?.getValue()
-	// 			},
-	// 		}),
-	// 		columnHelper.accessor('counterparty_name', {
-	// 			header: 'Counterparty Name',
-	// 			cell: (info) => info?.getValue(),
-	// 		}),
-	// 		// {
-	// 		// 	header: 'Payment type',
-	// 		// 	accessorKey: 'payment_type',
-	// 		// },
-	// 		// {
-	// 		// 	header: 'Amount',
-	// 		// 	accessorKey: 'amount',
-	// 		// },
-	// 		// {
-	// 		// 	header: 'Attachment',
-	// 		// 	accessorKey: 'attachment',
-	// 		// },
-	// 	]
-	// }, [])
-
-	// const transactionTable = useReactTable({
-	// 	data: transactions || [],
-	// 	columns,
-	// 	getCoreRowModel: getCoreRowModel(),
-	// })
 
 	if (isLoading) {
 		// @TODO: Better loader/component
@@ -150,32 +132,24 @@ export default function TransactionPage() {
 	return (
 		<div className={'p-6 pt-[5rem] flex justify-center'}>
 			<table>
-				<thead className={'text-sm'}>
-					<tr className={'border-b border-gray-500'}>
-						{columns.map((column) => (
-							<td className={'pr-10 pb-6'} key={column.key}>
-								{column.label}
-							</td>
-						))}
-					</tr>
-				</thead>
+				{renderTableHeader()}
 				<tbody>
-					{transactions?.map((transaction) => (
-						<tr
-							className={'border-b border-gray-300'}
-							key={transaction.id}
-						>
-							{columns.map((column) => (
-								<td className={'py-6 pr-6'} key={column.key}>
-									{column.formater
-										? column.formater(transaction)
-										: JSON.stringify(
-												transaction[column.key],
-											)}
-								</td>
-							))}
-						</tr>
-					))}
+					{transactionTable.getRowModel().rows.map((row) => {
+						return (
+							<tr className={'font-medium border-b border-gray-300'} key={row.id}>
+								{row.getVisibleCells().map((cell) => {
+									return (
+										<td
+											className={`py-6 pr-6 ${cell.column.id === 'amount' ? 'text-right' : ''}`}
+											key={cell.id}
+										>
+											{flexRender(cell.column.columnDef.cell, cell.getContext())}
+										</td>
+									)
+								})}
+							</tr>
+						)
+					})}
 				</tbody>
 			</table>
 		</div>
