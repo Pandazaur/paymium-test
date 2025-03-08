@@ -152,9 +152,7 @@ export default function TransactionPage() {
 								{transactionTable.getRowModel().rows.map((row) => {
 									return (
 										<tr
-											className={
-												'font-medium border-b border-gray-300 cursor-pointer hover:bg-gray-200'
-											}
+											className={`font-medium border-b border-gray-300 cursor-pointer hover:bg-gray-200 ${row.getIsSelected() ? 'bg-gray-200' : ''}`}
 											key={row.id}
 											onClick={() => row.toggleSelected()}
 										>
