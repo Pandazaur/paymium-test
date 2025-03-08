@@ -1,4 +1,5 @@
 import {
+	type Column,
 	createColumnHelper,
 	flexRender,
 	getCoreRowModel,
@@ -16,10 +17,12 @@ import { retypeTransaction } from '../../utils/transactions.ts'
 import type { Transaction } from '../../types/response/transaction-api/TransactionList.type.ts'
 import PageContent from '../../components/templates/PageContent.tsx'
 import SelectedTransactionList from './partials/SelectedTransactionList.tsx'
+import { cn } from '../../utils/cn.ts'
+import Loader from '../../components/ui/Loader.tsx'
 
 export default function TransactionPage() {
-	const [sorting, setSorting] = useState<SortingState>([])
-	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+	const [sorting, setSorting] = useState<SortingState>([]) // Array containing the sorted columns (asc/desc)
+	const [rowSelection, setRowSelection] = useState<RowSelectionState>({}) // Object containing the selected rows
 
 	const {
 		data: transactions,
@@ -38,6 +41,7 @@ export default function TransactionPage() {
 		if (!transactions) {
 			return []
 		}
+
 		return transactions.filter((transaction) => rowSelection[transaction.id])
 	}, [rowSelection, transactions])
 
@@ -70,7 +74,7 @@ export default function TransactionPage() {
 					return (
 						<span className={'inline-flex items-center gap-1'}>
 							{amountText}{' '}
-							<span className={`text-xs ${info.getValue() > 0 ? 'text-green-300' : 'text-red-300'}`}>
+							<span className={cn('text-xs', info.getValue() > 0 ? 'text-green-300' : 'text-red-300')}>
 								{indicator}
 							</span>
 						</span>
@@ -99,6 +103,17 @@ export default function TransactionPage() {
 		},
 	})
 
+	const getSortIndicator = (column: Column<Transaction>) => {
+		switch (column.getIsSorted()) {
+			case 'asc':
+				return ' ▲ '
+			case 'desc':
+				return ' ▼ '
+			default:
+				return null
+		}
+	}
+
 	const renderTableHeader = () => {
 		return (
 			<thead className={'border-b border-gray-500'}>
@@ -107,7 +122,10 @@ export default function TransactionPage() {
 						{headerGroup.headers.map((header) => {
 							return (
 								<th
-									className={`text-sm pb-6 pr-6 ${header.column.getIsSorted() ? 'font-medium' : 'font-normal'}`}
+									className={cn(
+										'text-sm pb-6 pr-6',
+										header.column.getIsSorted() ? 'font-medium' : 'font-normal',
+									)}
 									key={header.id}
 									colSpan={header.colSpan}
 								>
@@ -118,8 +136,7 @@ export default function TransactionPage() {
 										>
 											{flexRender(header.column.columnDef.header, header.getContext())}
 											<span className={'text-xs text-yellow-500'}>
-												{{ asc: ' ▲ ', desc: ' ▼ ' }[header.column.getIsSorted() as string] ??
-													null}
+												{getSortIndicator(header.column)}
 											</span>
 										</div>
 									)}
@@ -133,8 +150,11 @@ export default function TransactionPage() {
 	}
 
 	if (isLoading) {
-		// @TODO: Better loader/component
-		return <div className={'w-full pt-20 text-center'}>Loading ...</div>
+		return (
+			<div className={'w-full pt-20 text-center flex justify-center'}>
+				<Loader />
+			</div>
+		)
 	}
 
 	if (error) {
@@ -152,14 +172,20 @@ export default function TransactionPage() {
 								{transactionTable.getRowModel().rows.map((row) => {
 									return (
 										<tr
-											className={`font-medium border-b border-gray-300 cursor-pointer hover:bg-gray-200 ${row.getIsSelected() ? 'bg-gray-200' : ''}`}
+											className={cn(
+												'border-b border-gray-300 cursor-pointer hover:bg-gray-200',
+												row.getIsSelected() ? 'bg-gray-200' : '',
+											)}
 											key={row.id}
 											onClick={() => row.toggleSelected()}
 										>
 											{row.getVisibleCells().map((cell) => {
 												return (
 													<td
-														className={`py-6 pr-6 ${cell.column.id === 'amount' ? 'text-right' : ''}`}
+														className={cn(
+															'py-6 pr-6',
+															cell.column.id === 'amount' ? 'text-right' : '',
+														)}
 														key={cell.id}
 													>
 														{flexRender(cell.column.columnDef.cell, cell.getContext())}
