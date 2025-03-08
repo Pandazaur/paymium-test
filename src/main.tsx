@@ -9,6 +9,7 @@ import '@fontsource-variable/rubik'
 import DashboardLayout from './components/layouts/DashboardLayout/DashboardLayout.tsx'
 import App from './pages/home/App.tsx'
 import { RouteName } from './utils/RouteName.ts'
+import TransactionPage from './pages/transactions/TransactionPage.tsx'
 
 const ROOT_ELEMENT_ID = 'root'
 
@@ -29,7 +30,7 @@ createRoot(rootEl).render(
 						<Route index element={<App />} />
 						<Route
 							path={RouteName.TRANSACTIONS}
-							element={<App />}
+							element={<TransactionPage />}
 						/>
 					</Route>
 				</Routes>

@@ -19,14 +19,18 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"a11y": {
+				"useKeyWithClickEvents": "off"
+			}
 		}
 	},
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "single",
 			"indentWidth": 4,
-			"semicolons": "asNeeded"
+			"semicolons": "asNeeded",
+			"lineWidth": 120
 		}
 	}
 }
