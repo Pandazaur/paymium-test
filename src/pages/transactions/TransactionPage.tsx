@@ -1,12 +1,10 @@
-// biome-ignore lint/style/useImportType: <explanation>
 import {
 	createColumnHelper,
 	flexRender,
 	getCoreRowModel,
 	getSortedRowModel,
-	Row,
-	RowSelectionState,
-	SortingState,
+	type RowSelectionState,
+	type SortingState,
 	useReactTable,
 } from '@tanstack/react-table'
 import { DateTime } from 'luxon'
@@ -16,6 +14,8 @@ import { queries } from '../../libs/queries/factories'
 import { toMilliseconds } from '../../utils/time.ts'
 import { retypeTransaction } from '../../utils/transactions.ts'
 import type { Transaction } from '../../types/response/transaction-api/TransactionList.type.ts'
+import PageContent from '../../components/templates/PageContent.tsx'
+import SelectedTransactionList from './partials/SelectedTransactionList.tsx'
 
 export default function TransactionPage() {
 	const [sorting, setSorting] = useState<SortingState>([])
@@ -33,6 +33,13 @@ export default function TransactionPage() {
 			return transactionsResult[0].transactions.map(retypeTransaction)
 		},
 	})
+
+	const selectedTransactionList = useMemo(() => {
+		if (!transactions) {
+			return []
+		}
+		return transactions.filter((transaction) => rowSelection[transaction.id])
+	}, [rowSelection, transactions])
 
 	const columns = useMemo(() => {
 		const columnsHelper = createColumnHelper<Transaction>()
@@ -92,14 +99,6 @@ export default function TransactionPage() {
 		},
 	})
 
-	const onSelectRow = (e: MouseEvent, row: Row<Transaction>) => {
-		if (!e.shiftKey) {
-			setRowSelection({})
-		}
-
-		row.toggleSelected()
-	}
-
 	const renderTableHeader = () => {
 		return (
 			<thead className={'border-b border-gray-500'}>
@@ -143,37 +142,41 @@ export default function TransactionPage() {
 	}
 
 	return (
-		<div className={'flex'}>
-			<div className={'p-6 pt-[5rem] flex justify-center'}>
-				<table>
-					{renderTableHeader()}
-					<tbody>
-						{transactionTable.getRowModel().rows.map((row) => {
-							return (
-								<tr
-									className={'font-medium border-b border-gray-300 cursor-pointer hover:bg-gray-200'}
-									key={row.id}
-									onClick={(e) => onSelectRow(e, row)}
-								>
-									{row.getVisibleCells().map((cell) => {
-										return (
-											<td
-												className={`py-6 pr-6 ${cell.column.id === 'amount' ? 'text-right' : ''}`}
-												key={cell.id}
-											>
-												{flexRender(cell.column.columnDef.cell, cell.getContext())}
-											</td>
-										)
-									})}
-								</tr>
-							)
-						})}
-					</tbody>
-				</table>
-			</div>
-			<div className={'max-w-[20.9375em] w-full'}>
-				<div className="header__cell bg-gray-200" />
-			</div>
+		<div className={'flex-1 flex'}>
+			<PageContent className={'flex-1'} headerClassName={'bg-yellow-500'}>
+				<div className={'flex justify-center'}>
+					<div className={'p-6 pt-[5rem] flex justify-center'}>
+						<table>
+							{renderTableHeader()}
+							<tbody>
+								{transactionTable.getRowModel().rows.map((row) => {
+									return (
+										<tr
+											className={
+												'font-medium border-b border-gray-300 cursor-pointer hover:bg-gray-200'
+											}
+											key={row.id}
+											onClick={() => row.toggleSelected()}
+										>
+											{row.getVisibleCells().map((cell) => {
+												return (
+													<td
+														className={`py-6 pr-6 ${cell.column.id === 'amount' ? 'text-right' : ''}`}
+														key={cell.id}
+													>
+														{flexRender(cell.column.columnDef.cell, cell.getContext())}
+													</td>
+												)
+											})}
+										</tr>
+									)
+								})}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</PageContent>
+			<SelectedTransactionList selectedTransactions={selectedTransactionList} />
 		</div>
 	)
 }
