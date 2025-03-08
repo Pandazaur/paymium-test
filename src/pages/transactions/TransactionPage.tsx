@@ -4,6 +4,8 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getSortedRowModel,
+	Row,
+	RowSelectionState,
 	SortingState,
 	useReactTable,
 } from '@tanstack/react-table'
@@ -17,6 +19,7 @@ import type { Transaction } from '../../types/response/transaction-api/Transacti
 
 export default function TransactionPage() {
 	const [sorting, setSorting] = useState<SortingState>([])
+	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
 	const {
 		data: transactions,
@@ -81,10 +84,21 @@ export default function TransactionPage() {
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		onSortingChange: setSorting,
+		onRowSelectionChange: setRowSelection,
+		getRowId: (row) => row.id,
 		state: {
 			sorting,
+			rowSelection,
 		},
 	})
+
+	const onSelectRow = (e: MouseEvent, row: Row<Transaction>) => {
+		if (!e.shiftKey) {
+			setRowSelection({})
+		}
+
+		row.toggleSelected()
+	}
 
 	const renderTableHeader = () => {
 		return (
@@ -99,7 +113,6 @@ export default function TransactionPage() {
 									colSpan={header.colSpan}
 								>
 									{header.isPlaceholder ? null : (
-										// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 										<div
 											className={header.column.getCanSort() ? 'cursor-pointer select-none' : ''}
 											onClick={header.column.getToggleSortingHandler()}
@@ -130,28 +143,37 @@ export default function TransactionPage() {
 	}
 
 	return (
-		<div className={'p-6 pt-[5rem] flex justify-center'}>
-			<table>
-				{renderTableHeader()}
-				<tbody>
-					{transactionTable.getRowModel().rows.map((row) => {
-						return (
-							<tr className={'font-medium border-b border-gray-300'} key={row.id}>
-								{row.getVisibleCells().map((cell) => {
-									return (
-										<td
-											className={`py-6 pr-6 ${cell.column.id === 'amount' ? 'text-right' : ''}`}
-											key={cell.id}
-										>
-											{flexRender(cell.column.columnDef.cell, cell.getContext())}
-										</td>
-									)
-								})}
-							</tr>
-						)
-					})}
-				</tbody>
-			</table>
+		<div className={'flex'}>
+			<div className={'p-6 pt-[5rem] flex justify-center'}>
+				<table>
+					{renderTableHeader()}
+					<tbody>
+						{transactionTable.getRowModel().rows.map((row) => {
+							return (
+								<tr
+									className={'font-medium border-b border-gray-300 cursor-pointer hover:bg-gray-200'}
+									key={row.id}
+									onClick={(e) => onSelectRow(e, row)}
+								>
+									{row.getVisibleCells().map((cell) => {
+										return (
+											<td
+												className={`py-6 pr-6 ${cell.column.id === 'amount' ? 'text-right' : ''}`}
+												key={cell.id}
+											>
+												{flexRender(cell.column.columnDef.cell, cell.getContext())}
+											</td>
+										)
+									})}
+								</tr>
+							)
+						})}
+					</tbody>
+				</table>
+			</div>
+			<div className={'max-w-[20.9375em] w-full'}>
+				<div className="header__cell bg-gray-200" />
+			</div>
 		</div>
 	)
 }
