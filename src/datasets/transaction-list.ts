@@ -1,5 +1,8 @@
 import type { TransactionListResponse } from '../types/response/transaction-api/TransactionList.type.ts'
 
+/**
+ * Mocked Transaction API response
+ */
 const transactions: TransactionListResponse = [
 	{
 		transactions: [

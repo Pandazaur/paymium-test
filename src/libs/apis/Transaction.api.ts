@@ -7,7 +7,7 @@ const http = axios.create({
 })
 
 export async function getTransactionList(): Promise<TransactionListResponse> {
-	if (import.meta.env.DEV) {
+	if (import.meta.env.VITE_PUBLIC_MOCK_API === 'true') {
 		return new Promise((resolve) => {
 			setTimeout(() => {
 				resolve(TransactionListMock)

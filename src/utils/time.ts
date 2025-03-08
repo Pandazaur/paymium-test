@@ -1,10 +1,14 @@
-type ToMillisPayload = {
+type Duration = {
 	seconds?: number
 	minutes?: number
 	hours?: number
 }
 
-export function toMilliseconds(opts: ToMillisPayload) {
+/**
+ * Transform any duration in milliseconds
+ * @param opts Duration units to convert
+ */
+export function toMilliseconds(opts: Duration) {
 	let count = 0
 
 	if (opts.seconds) {
