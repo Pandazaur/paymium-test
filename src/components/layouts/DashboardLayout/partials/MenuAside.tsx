@@ -1,5 +1,5 @@
-import { NavLink } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
+import { NavLink } from 'react-router'
 import { queries } from '../../../../libs/queries/factories'
 import { toMilliseconds } from '../../../../utils/time.ts'
 
@@ -25,23 +25,14 @@ export default function MenuAside() {
 		[{ label: 'Team' }, { label: 'Integrations' }, { label: 'Settings' }],
 	]
 
-	const renderNavSection = (
-		links: { label: string; to?: string }[],
-		isLastSection?: boolean,
-	) => {
+	const renderNavSection = (links: { label: string; to?: string }[], isLastSection?: boolean) => {
 		return (
 			<div key={links.map((link) => link.label).join('-')}>
-				<ul
-					className={
-						'py-[2.625rem] px-[3.4375rem] flex flex-col gap-4'
-					}
-				>
+				<ul className={'py-[2.625rem] px-[3.4375rem] flex flex-col gap-4'}>
 					{links.map((link) => (
 						<li key={link.label}>
 							<NavLink
-								className={
-									'text-gray-500 hover:text-white transition-all duration-200'
-								}
+								className={'text-gray-500 hover:text-white transition-all duration-200'}
 								to={link.to || '#'}
 							>
 								{link.label}
@@ -49,9 +40,7 @@ export default function MenuAside() {
 						</li>
 					))}
 				</ul>
-				{!isLastSection && (
-					<hr className={'border-gray-500 border-1 opacity-25'} />
-				)}
+				{!isLastSection && <hr className={'border-gray-500 border-1 opacity-25'} />}
 			</div>
 		)
 	}
@@ -59,16 +48,12 @@ export default function MenuAside() {
 	return (
 		<aside className={'flex flex-col max-w-[17.25rem] w-full h-full'}>
 			<div
-				className={
-					'bg-gray-900 flex items-center justify-center text-white font-medium header__cell text-2xl'
-				}
+				className={'bg-gray-900 flex items-center justify-center text-white font-medium header__cell text-3xl'}
 			>
 				FINPAL
 			</div>
 			<nav className={'flex-1 bg-gray-700 overflow-auto text-gray-300'}>
-				{LINKS.map((linkSection, i) =>
-					renderNavSection(linkSection, i === LINKS.length - 1),
-				)}
+				{LINKS.map((linkSection, i) => renderNavSection(linkSection, i === LINKS.length - 1))}
 				<div className="flex justify-center">
 					{/* @TODO: En faire un composant si on le réutilise une fois */}
 					<button
