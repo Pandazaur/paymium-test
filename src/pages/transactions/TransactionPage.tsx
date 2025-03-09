@@ -1,24 +1,25 @@
+import { useQuery } from '@tanstack/react-query'
 import {
 	type Column,
+	type Row,
+	type RowSelectionState,
+	type SortingState,
 	createColumnHelper,
 	flexRender,
 	getCoreRowModel,
 	getSortedRowModel,
-	type RowSelectionState,
-	type SortingState,
 	useReactTable,
 } from '@tanstack/react-table'
 import { DateTime } from 'luxon'
 import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import PageContent from '../../components/templates/PageContent.tsx'
+import Loader from '../../components/ui/Loader.tsx'
 import { queries } from '../../libs/queries/factories'
+import type { Transaction } from '../../types/response/transaction-api/TransactionList.type.ts'
+import { cn } from '../../utils/cn.ts'
 import { toMilliseconds } from '../../utils/time.ts'
 import { retypeTransaction } from '../../utils/transactions.ts'
-import type { Transaction } from '../../types/response/transaction-api/TransactionList.type.ts'
-import PageContent from '../../components/templates/PageContent.tsx'
 import SelectedTransactionList from './partials/SelectedTransactionList.tsx'
-import { cn } from '../../utils/cn.ts'
-import Loader from '../../components/ui/Loader.tsx'
 
 export default function TransactionPage() {
 	const [sorting, setSorting] = useState<SortingState>([]) // Array containing the sorted columns (asc/desc)
@@ -103,6 +104,14 @@ export default function TransactionPage() {
 		},
 	})
 
+	const onSelectRow = (e: MouseEvent, transactionRow: Row<Transaction>) => {
+		if (!e.shiftKey) {
+			setRowSelection({})
+		}
+		document.getSelection().removeAllRanges()
+		transactionRow.toggleSelected()
+	}
+
 	const getSortIndicator = (column: Column<Transaction>) => {
 		switch (column.getIsSorted()) {
 			case 'asc':
@@ -177,7 +186,7 @@ export default function TransactionPage() {
 												row.getIsSelected() ? 'bg-gray-200' : '',
 											)}
 											key={row.id}
-											onClick={() => row.toggleSelected()}
+											onClick={(e) => onSelectRow(e as unknown as MouseEvent, row)}
 										>
 											{row.getVisibleCells().map((cell) => {
 												return (
