@@ -14,7 +14,6 @@ export default function MenuAside() {
 	const LINKS = [
 		[
 			{ label: 'Overview', to: '/' },
-			// @TODO Changer le compte dynamiquement
 			{
 				label: `Transactions ${transactionCount ? `(${transactionCount})` : ''}`,
 				to: '/transactions',
@@ -55,7 +54,6 @@ export default function MenuAside() {
 			<nav className={'flex-1 bg-gray-700 overflow-auto text-gray-300'}>
 				{LINKS.map((linkSection, i) => renderNavSection(linkSection, i === LINKS.length - 1))}
 				<div className="flex justify-center">
-					{/* @TODO: En faire un composant si on le réutilise une fois */}
 					<button
 						type={'button'}
 						className={
