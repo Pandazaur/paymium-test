@@ -108,7 +108,7 @@ export default function TransactionPage() {
 		if (!e.shiftKey) {
 			setRowSelection({})
 		}
-		document.getSelection().removeAllRanges()
+		document.getSelection()?.removeAllRanges()
 		transactionRow.toggleSelected()
 	}
 
