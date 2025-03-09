@@ -17,7 +17,7 @@
 - hotfix/<name> : Urgent fix to deploy in production directly
 
 ## Features
-[x] Make each column sortable.
-[x] Add support for row multi select using the Shift key.
-[x] A single row selection should display the details into the right side panel.
-[x] A multi row selection should display the selected transaction's ids into the right side panel.
+- Make each column sortable.
+- Add support for row multi select using the Shift key.
+- A single row selection should display the details into the right side panel.
+- A multi row selection should display the selected transaction's ids into the right side panel.
